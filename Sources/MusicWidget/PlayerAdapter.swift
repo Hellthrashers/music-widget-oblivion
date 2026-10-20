@@ -15,11 +15,16 @@ enum PlayerError: Error {
 protocol PlayerAdapter {
     var name: String { get }
     func nowPlaying() throws -> NowPlaying?
+    func artwork() throws -> Data?
     func playPause() throws
     func next() throws
     func previous() throws
     func playlists() throws -> [String]
     func playPlaylist(at index: Int) throws
+}
+
+extension PlayerAdapter {
+    func artwork() throws -> Data? { nil }
 }
 
 /// Adapter generico basado en AppleScript (Music y Spotify comparten sintaxis).
@@ -62,6 +67,24 @@ class ScriptPlayerAdapter: PlayerAdapter {
         let parts = out.components(separatedBy: "|")
         guard parts.count >= 3, parts[0] != "stopped" else { return nil }
         return NowPlaying(isPlaying: parts[0] == "playing", title: parts[1], artist: parts[2])
+    }
+
+    func artwork() throws -> Data? {
+        guard isRunning() else { throw PlayerError.notRunning }
+        var errorInfo: NSDictionary?
+        guard let script = NSAppleScript(source: """
+        tell application id "\(bundleID)"
+            return data of artwork 1 of current track
+        end tell
+        """) else {
+            throw PlayerError.script("invalid artwork script")
+        }
+        let result = script.executeAndReturnError(&errorInfo)
+        if let errorInfo {
+            let message = (errorInfo[NSAppleScript.errorMessage] as? String) ?? "unknown"
+            throw PlayerError.script(message)
+        }
+        return result.data.isEmpty ? nil : result.data
     }
 
     func playPause() throws {
