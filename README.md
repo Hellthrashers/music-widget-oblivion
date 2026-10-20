@@ -99,6 +99,12 @@ Useful to debug permission/provider availability issues.
 ### Build fails
 - Check Swift/Xcode version compatibility (Swift 5.9, Xcode 15+).
 
+### macOS system messages in the console
+- Messages about `com.apple.linkd.autoShortcut` come from macOS's shortcut registration service. This app does not define App Intents, so these messages are not an app feature failure by themselves.
+- `Cannot index window tabs due to missing main bundle identifier` can appear when launching the raw executable. Launch the packaged `.build/MusicWidget.app` instead; its `Info.plist` supplies the bundle identifier.
+- The layout-recursion warning can occur if playback refreshes update menu content while AppKit is displaying the menu. The app now defers those refreshes until the menu closes. If it persists, check whether the app was launched from the packaged bundle and whether the warning corresponds to a visible layout problem.
+- Task-port and accessibility-shield messages are emitted by macOS process/accessibility services. This app does not create custom windows or request accessibility control; treat them as system diagnostics unless a user-facing feature is failing.
+
 ## Project structure (current MVP)
 - `Package.swift` — Swift package definition
 - `Sources/MusicWidget/main.swift` — app bootstrap

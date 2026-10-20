@@ -12,6 +12,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let playlistsMenu = NSMenu(title: "Playlists")
     private var refreshMenuItems: [NSMenuItem] = []
     private var timer: Timer?
+    private var statusMenu: NSMenu?
+    private var isStatusMenuOpen = false
+    private var refreshPendingForMenuClose = false
     private var artworkTrackKey: String?
     private var currentArtwork: NSImage?
 
@@ -67,6 +70,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func buildMenu() {
         let menu = NSMenu()
+        menu.delegate = self
+        statusMenu = menu
         nowPlayingItem.isEnabled = false
         menu.addItem(nowPlayingItem)
         menu.addItem(.separator())
@@ -221,6 +226,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     func menuWillOpen(_ menu: NSMenu) {
+        if menu === statusMenu {
+            isStatusMenuOpen = true
+            return
+        }
         guard menu === playlistsMenu else { return }
         playlistsMenu.removeAllItems()
         do {
@@ -247,6 +256,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 
+    func menuDidClose(_ menu: NSMenu) {
+        guard menu === statusMenu else { return }
+        isStatusMenuOpen = false
+        guard refreshPendingForMenuClose else { return }
+        refreshPendingForMenuClose = false
+        DispatchQueue.main.async { [weak self] in self?.refresh() }
+    }
+
     @objc private func playPlaylist(_ sender: NSMenuItem) {
         guard let selection = sender.representedObject as? PlaylistSelection else { return }
         let selectedAdapter = adapters[selection.sourceIndex]
@@ -264,6 +281,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     @objc private func quit() { NSApplication.shared.terminate(nil) }
 
     private func refresh() {
+        guard !isStatusMenuOpen else {
+            refreshPendingForMenuClose = true
+            return
+        }
+
         do {
             var activeAdapter = adapter
             var nowPlaying = try activeAdapter.nowPlaying()
