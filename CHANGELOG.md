@@ -9,6 +9,7 @@ This project follows a lightweight changelog format and uses semantic pre-releas
 ## [Unreleased]
 
 ### Added
+- Current playback position and track duration in the now-playing menu item.
 - Playlist quick access for the active Apple Music or Spotify source.
 - A menu entry that opens macOS Sound settings for output selection.
 - Now-playing artwork in the menu when provided by the active player.

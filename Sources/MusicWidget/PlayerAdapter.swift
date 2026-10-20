@@ -5,6 +5,8 @@ struct NowPlaying {
     let isPlaying: Bool
     let title: String
     let artist: String
+    let elapsedTime: TimeInterval?
+    let duration: TimeInterval?
 }
 
 enum PlayerError: Error {
@@ -60,13 +62,21 @@ class ScriptPlayerAdapter: PlayerAdapter {
         guard isRunning() else { return nil }
         let out = try run("""
         tell application id "\(bundleID)"
-            if player state is stopped then return "stopped||"
-            return (player state as string) & "|" & (name of current track) & "|" & (artist of current track)
+            if player state is stopped then return "stopped"
+            set elapsed to player position
+            set trackLength to (duration of current track) div 1000
+            return (player state as string) & (ASCII character 31) & (name of current track) & (ASCII character 31) & (artist of current track) & (ASCII character 31) & (elapsed as string) & (ASCII character 31) & (trackLength as string)
         end tell
         """)
-        let parts = out.components(separatedBy: "|")
-        guard parts.count >= 3, parts[0] != "stopped" else { return nil }
-        return NowPlaying(isPlaying: parts[0] == "playing", title: parts[1], artist: parts[2])
+        let parts = out.components(separatedBy: String(UnicodeScalar(31)!))
+        guard parts.count >= 5, parts[0] != "stopped" else { return nil }
+        return NowPlaying(
+            isPlaying: parts[0] == "playing",
+            title: parts[1],
+            artist: parts[2],
+            elapsedTime: Double(parts[3]),
+            duration: Double(parts[4])
+        )
     }
 
     func artwork() throws -> Data? {

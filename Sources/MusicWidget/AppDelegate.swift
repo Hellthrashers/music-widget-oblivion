@@ -127,6 +127,19 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         sourceItem.title = "Source: \(adapter.name) (click para cambiar)"
     }
 
+    private func progressText(for nowPlaying: NowPlaying) -> String? {
+        guard let elapsedTime = nowPlaying.elapsedTime,
+              let duration = nowPlaying.duration,
+              duration > 0 else { return nil }
+
+        func format(_ time: TimeInterval) -> String {
+            let seconds = max(0, Int(time))
+            return "\(seconds / 60):\(String(format: "%02d", seconds % 60))"
+        }
+
+        return "\(format(elapsedTime)) / \(format(duration))"
+    }
+
     private func perform(_ action: String, _ block: () throws -> Void) {
         do {
             try block()
@@ -272,7 +285,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 if let image = currentArtwork {
                     image.size = NSSize(width: 32, height: 32)
                 }
-                let text = "\(nowPlaying.isPlaying ? "▶" : "⏸") \(nowPlaying.title) — \(nowPlaying.artist)"
+                let progress = progressText(for: nowPlaying).map { " · \($0)" } ?? ""
+                let text = "\(nowPlaying.isPlaying ? "▶" : "⏸") \(nowPlaying.title) — \(nowPlaying.artist)\(progress)"
                 nowPlayingItem.title = text
                 statusItem.button?.title = text.count > 40 ? String(text.prefix(40)) + "…" : text
             } else {

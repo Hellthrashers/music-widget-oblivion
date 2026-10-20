@@ -54,6 +54,7 @@ You may also need to relaunch the app after granting permissions.
 1. Launch the app.
 2. A menu bar item appears (`♪` or current track text).
 3. Click the menu bar item to open controls:
+   - Current playback position and track duration are shown when available.
    - `⏮ Previous` (`⌥⌘B`)
    - `⏯ Play/Pause` (`⌥⌘K`)
    - `⏭ Next` (`⌥⌘N`)
