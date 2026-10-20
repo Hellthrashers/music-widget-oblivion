@@ -21,13 +21,14 @@ protocol PlayerAdapter {
 }
 
 /// Adapter generico basado en AppleScript (Music y Spotify comparten sintaxis).
+/// Usa bundle identifier (independiente del idioma del sistema).
 class ScriptPlayerAdapter: PlayerAdapter {
     let name: String
-    let appName: String
+    let bundleID: String
 
-    init(name: String, appName: String) {
+    init(name: String, bundleID: String) {
         self.name = name
-        self.appName = appName
+        self.bundleID = bundleID
     }
 
     @discardableResult
@@ -45,13 +46,13 @@ class ScriptPlayerAdapter: PlayerAdapter {
     }
 
     func isRunning() -> Bool {
-        NSWorkspace.shared.runningApplications.contains { $0.localizedName == appName }
+        !NSRunningApplication.runningApplications(withBundleIdentifier: bundleID).isEmpty
     }
 
     func nowPlaying() throws -> NowPlaying? {
         guard isRunning() else { return nil }
         let out = try run("""
-        tell application "\(appName)"
+        tell application id "\(bundleID)"
             if player state is stopped then return "stopped||"
             return (player state as string) & "|" & (name of current track) & "|" & (artist of current track)
         end tell
@@ -63,24 +64,24 @@ class ScriptPlayerAdapter: PlayerAdapter {
 
     func playPause() throws {
         guard isRunning() else { throw PlayerError.notRunning }
-        try run("tell application \"\(appName)\" to playpause")
+        try run("tell application id \"\(bundleID)\" to playpause")
     }
 
     func next() throws {
         guard isRunning() else { throw PlayerError.notRunning }
-        try run("tell application \"\(appName)\" to next track")
+        try run("tell application id \"\(bundleID)\" to next track")
     }
 
     func previous() throws {
         guard isRunning() else { throw PlayerError.notRunning }
-        try run("tell application \"\(appName)\" to previous track")
+        try run("tell application id \"\(bundleID)\" to previous track")
     }
 }
 
 final class AppleMusicAdapter: ScriptPlayerAdapter {
-    init() { super.init(name: "Apple Music", appName: "Music") }
+    init() { super.init(name: "Apple Music", bundleID: "com.apple.Music") }
 }
 
 final class SpotifyAdapter: ScriptPlayerAdapter {
-    init() { super.init(name: "Spotify", appName: "Spotify") }
+    init() { super.init(name: "Spotify", bundleID: "com.spotify.client") }
 }
