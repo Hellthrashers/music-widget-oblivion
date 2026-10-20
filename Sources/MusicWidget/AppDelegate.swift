@@ -227,11 +227,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         do {
             try selectedAdapter.playPlaylist(at: selection.playlistIndex)
             Log.info("playPlaylist", provider: selectedAdapter.name)
+            refresh()
         } catch {
             Log.error("playPlaylist", provider: selectedAdapter.name, error: "\(error)")
             nowPlayingItem.title = "\(selectedAdapter.name): no se pudo reproducir la playlist"
+            statusItem.button?.title = "♪"
         }
-        refresh()
     }
 
     @objc private func quit() { NSApplication.shared.terminate(nil) }

@@ -27,8 +27,10 @@ Use mocks/fakes for external dependencies (Spotify APIs, Apple Music scripting A
 - Now-playing metadata refresh works.
 - Play/pause/next/previous actions work on active source.
 - Source switch Apple Music ↔ Spotify.
+- Playlists load for the active source and selecting one starts playback.
+- Empty/unavailable playlists show a non-interactive fallback instead of breaking the menu.
+- Sound settings open from the menu and allow choosing an output.
 - Missing permission path shows actionable UI.
-- Output switch path is reachable and updates state.
 
 ## 3. Coverage Guidance
 - Prefer meaningful scenario coverage over blanket percentages.

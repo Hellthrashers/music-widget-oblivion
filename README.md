@@ -60,12 +60,16 @@ You may also need to relaunch the app after granting permissions.
 4. Click `Source: ...` to toggle active provider:
    - Apple Music
    - Spotify
-5. The app refreshes now-playing status automatically.
+5. Open **Playlists** to choose and play a playlist from the active provider.
+6. Choose **Open Sound Settings…** to select an audio output in macOS Settings.
+7. The app refreshes now-playing status automatically.
 
 ## Behavior notes
 - If selected source app is not running, now-playing may show as unavailable.
 - If playback is stopped, menubar shows the fallback icon/text.
 - Source selection is persisted locally using `UserDefaults`.
+- Audio output selection is handled by macOS Sound settings; the app opens that pane but does not change outputs itself.
+- Playlist availability and playback depend on the selected player and its Automation permissions.
 
 ## Logging
 The app emits simple logs to console in this style:
