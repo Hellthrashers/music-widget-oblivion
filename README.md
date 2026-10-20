@@ -54,12 +54,14 @@ You may also need to relaunch the app after granting permissions.
 1. Launch the app.
 2. A menu bar item appears (`♪` or current track text).
 3. Click the menu bar item to open controls:
-   - `⏮ Previous`
-   - `⏯ Play/Pause`
-   - `⏭ Next`
+   - `⏮ Previous` (`⌥⌘B`)
+   - `⏯ Play/Pause` (`⌥⌘K`)
+   - `⏭ Next` (`⌥⌘N`)
+   - Current track artwork is shown beside the track details when the player provides it.
 4. Click `Source: ...` to toggle active provider:
    - Apple Music
    - Spotify
+   - If the other player starts playback, the app automatically switches to it.
 5. Open **Playlists** to choose and play a playlist from the active provider.
 6. Choose **Open Sound Settings…** to select an audio output in macOS Settings.
 7. The app refreshes now-playing status automatically.
@@ -68,6 +70,8 @@ You may also need to relaunch the app after granting permissions.
 - If selected source app is not running, now-playing may show as unavailable.
 - If playback is stopped, menubar shows the fallback icon/text.
 - Source selection is persisted locally using `UserDefaults`.
+- Playback shortcuts work while the menu is open.
+- When both players are playing, the currently selected source remains active.
 - Audio output selection is handled by macOS Sound settings; the app opens that pane but does not change outputs itself.
 - Playlist availability and playback depend on the selected player and its Automation permissions.
 

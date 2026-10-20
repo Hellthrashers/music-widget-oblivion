@@ -11,6 +11,9 @@ This project follows a lightweight changelog format and uses semantic pre-releas
 ### Added
 - Playlist quick access for the active Apple Music or Spotify source.
 - A menu entry that opens macOS Sound settings for output selection.
+- Now-playing artwork in the menu when provided by the active player.
+- Playback keyboard shortcuts while the menu is open: `⌥⌘B` previous, `⌥⌘K` play/pause, and `⌥⌘N` next.
+- Automatic source selection when playback starts in the other player.
 
 ## [v0.1.0-beta.1] - 2026-10-20
 

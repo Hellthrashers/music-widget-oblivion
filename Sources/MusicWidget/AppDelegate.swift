@@ -12,6 +12,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private let playlistsMenu = NSMenu(title: "Playlists")
     private var refreshMenuItems: [NSMenuItem] = []
     private var timer: Timer?
+    private var artworkTrackKey: String?
+    private var currentArtwork: NSImage?
 
     private let adapters: [PlayerAdapter] = [AppleMusicAdapter(), SpotifyAdapter()]
 
@@ -63,9 +65,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         nowPlayingItem.isEnabled = false
         menu.addItem(nowPlayingItem)
         menu.addItem(.separator())
-        menu.addItem(item("⏮ Previous", #selector(previousTapped)))
-        menu.addItem(item("⏯ Play/Pause", #selector(playPauseTapped)))
-        menu.addItem(item("⏭ Next", #selector(nextTapped)))
+        menu.addItem(item("⏮ Previous", #selector(previousTapped), key: "b", modifiers: [.command, .option]))
+        menu.addItem(item("⏯ Play/Pause", #selector(playPauseTapped), key: "k", modifiers: [.command, .option]))
+        menu.addItem(item("⏭ Next", #selector(nextTapped), key: "n", modifiers: [.command, .option]))
         menu.addItem(.separator())
 
         sourceItem.action = #selector(toggleSource)
@@ -102,9 +104,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         statusItem.menu = menu
     }
 
-    private func item(_ title: String, _ action: Selector, key: String = "") -> NSMenuItem {
+    private func item(
+        _ title: String,
+        _ action: Selector,
+        key: String = "",
+        modifiers: NSEvent.ModifierFlags = .command
+    ) -> NSMenuItem {
         let i = NSMenuItem(title: title, action: action, keyEquivalent: key)
         i.target = self
+        i.keyEquivalentModifierMask = modifiers
         return i
     }
 
@@ -239,11 +247,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func refresh() {
         do {
-            if let np = try adapter.nowPlaying() {
-                let text = "\(np.isPlaying ? "▶" : "⏸") \(np.title) — \(np.artist)"
+            var activeAdapter = adapter
+            var nowPlaying = try activeAdapter.nowPlaying()
+            if nowPlaying?.isPlaying != true {
+                for (index, candidate) in adapters.enumerated() where index != sourceIndex {
+                    if let candidateNowPlaying = try? candidate.nowPlaying(), candidateNowPlaying.isPlaying {
+                        sourceIndex = index
+                        activeAdapter = candidate
+                        nowPlaying = candidateNowPlaying
+                        updateSourceTitle()
+                        Log.info("autoDetectSource", provider: candidate.name)
+                        break
+                    }
+                }
+            }
+
+            if let nowPlaying {
+                let trackKey = "\(activeAdapter.name)|\(nowPlaying.title)|\(nowPlaying.artist)"
+                if trackKey != artworkTrackKey {
+                    artworkTrackKey = trackKey
+                    currentArtwork = (try? activeAdapter.artwork()).flatMap(NSImage.init(data:))
+                }
+                nowPlayingItem.image = currentArtwork
+                if let image = currentArtwork {
+                    image.size = NSSize(width: 32, height: 32)
+                }
+                let text = "\(nowPlaying.isPlaying ? "▶" : "⏸") \(nowPlaying.title) — \(nowPlaying.artist)"
                 nowPlayingItem.title = text
                 statusItem.button?.title = text.count > 40 ? String(text.prefix(40)) + "…" : text
             } else {
+                artworkTrackKey = nil
+                currentArtwork = nil
+                nowPlayingItem.image = nil
                 nowPlayingItem.title = "Nada reproduciendose (\(adapter.name))"
                 statusItem.button?.title = "♪"
             }
