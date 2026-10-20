@@ -279,12 +279,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 let trackKey = "\(activeAdapter.name)|\(nowPlaying.title)|\(nowPlaying.artist)"
                 if trackKey != artworkTrackKey {
                     artworkTrackKey = trackKey
-                    currentArtwork = (try? activeAdapter.artwork()).flatMap(NSImage.init(data:))
+                    currentArtwork = (try? activeAdapter.artwork()).flatMap { data in
+                        guard let image = NSImage(data: data) else { return nil }
+                        image.size = NSSize(width: 32, height: 32)
+                        return image
+                    }
                 }
                 nowPlayingItem.image = currentArtwork
-                if let image = currentArtwork {
-                    image.size = NSSize(width: 32, height: 32)
-                }
                 let progress = progressText(for: nowPlaying).map { " · \($0)" } ?? ""
                 let text = "\(nowPlaying.isPlaying ? "▶" : "⏸") \(nowPlaying.title) — \(nowPlaying.artist)\(progress)"
                 nowPlayingItem.title = text

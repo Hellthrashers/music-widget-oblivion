@@ -28,13 +28,14 @@ swift build
 ```
 
 ## Run
-Run directly with SwiftPM:
+Package the executable as a macOS app bundle and launch it:
 
 ```bash
-swift run
+./scripts/package-app.sh
+open .build/MusicWidget.app
 ```
 
-Or open in Xcode and run the executable target **MusicWidget**.
+Launch the app bundle rather than running the executable with `swift run`; macOS needs the bundle identifier for app registration and Automation permissions.
 
 ## First-run permissions (IMPORTANT)
 This app controls Music/Spotify via AppleScript automation.
