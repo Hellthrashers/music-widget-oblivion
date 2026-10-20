@@ -13,12 +13,17 @@ Thanks for contributing! This project follows a lightweight SDLC with practical 
 4. Ensure checks pass and checklist is complete.
 
 ## Conventional Commits
+Use English, imperative summaries and the format `<type>(<optional-scope>): <summary>`.
+Common types include `feat`, `fix`, `docs`, `refactor`, `test`, and `chore`.
 Examples:
-- `feat: add quick output switcher`
+- `feat(audio): add quick output switcher`
 - `fix: handle missing Spotify playback state`
 - `docs: update testing strategy`
 
 ## Pull Request Expectations
+- Write PR titles in English and follow the same Conventional Commits format; this keeps titles consistent with squash-merge commit history.
+- Keep titles concise and specific, describing the change rather than the task discussion.
+- Examples: `feat(playlists): add playlist quick access`, `fix: handle missing player permissions`.
 - Explain the change and motivation.
 - Link issues/tasks when applicable.
 - Add/update tests when behavior changes.
