@@ -47,7 +47,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusItem.button?.title = "♪"
+        setStatusTitle("♪")
 
         // Default inicial: 2s si nunca se guardó valor.
         if UserDefaults.standard.object(forKey: refreshIntervalKey) == nil {
@@ -55,9 +55,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
 
         buildMenu()
-        refresh()
+        DispatchQueue.main.async { [weak self] in self?.refresh() }
         configureTimer()
         Log.info("launch", provider: adapter.name)
+    }
+
+    private func setStatusTitle(_ title: String) {
+        guard let button = statusItem.button, button.title != title else { return }
+        button.title = title
     }
 
     private func buildMenu() {
@@ -252,7 +257,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         } catch {
             Log.error("playPlaylist", provider: selectedAdapter.name, error: "\(error)")
             nowPlayingItem.title = "\(selectedAdapter.name): no se pudo reproducir la playlist"
-            statusItem.button?.title = "♪"
+            setStatusTitle("♪")
         }
     }
 
@@ -289,18 +294,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
                 let progress = progressText(for: nowPlaying).map { " · \($0)" } ?? ""
                 let text = "\(nowPlaying.isPlaying ? "▶" : "⏸") \(nowPlaying.title) — \(nowPlaying.artist)\(progress)"
                 nowPlayingItem.title = text
-                statusItem.button?.title = text.count > 40 ? String(text.prefix(40)) + "…" : text
+                setStatusTitle(text.count > 40 ? String(text.prefix(40)) + "…" : text)
             } else {
                 artworkTrackKey = nil
                 currentArtwork = nil
                 nowPlayingItem.image = nil
                 nowPlayingItem.title = "Nada reproduciendose (\(adapter.name))"
-                statusItem.button?.title = "♪"
+                setStatusTitle("♪")
             }
         } catch {
             Log.error("refresh", provider: adapter.name, error: "\(error)")
             nowPlayingItem.title = "\(adapter.name): error (revisa permisos de Automation)"
-            statusItem.button?.title = "♪"
+            setStatusTitle("♪")
         }
     }
 }
