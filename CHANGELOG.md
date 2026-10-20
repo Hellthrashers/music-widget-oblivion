@@ -15,6 +15,10 @@ This project follows a lightweight changelog format and uses semantic pre-releas
 - Now-playing artwork in the menu when provided by the active player.
 - Playback keyboard shortcuts while the menu is open: `⌥⌘B` previous, `⌥⌘K` play/pause, and `⌥⌘N` next.
 - Automatic source selection when playback starts in the other player.
+- A macOS app bundle with a stable bundle identifier and Apple Events permission description.
+
+### Fixed
+- Resize track artwork before attaching it to the menu item to avoid triggering layout while AppKit is laying out the menu.
 
 ## [v0.1.0-beta.1] - 2026-10-20
 
