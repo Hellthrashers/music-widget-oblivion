@@ -11,7 +11,7 @@ Build a macOS menu bar widget that provides quick playback controls and context 
   - Current track metadata (title, artist, album).
   - Playback controls (previous, play/pause, next).
   - Progress display.
-  - Output selector entry point (AirPlay/audio output switch).
+  - Output selector entry point that opens macOS Sound settings for AirPlay/audio output selection.
 - Source selection (Apple Music / Spotify) with graceful fallback.
 - Basic playlist quick-access section.
 - Basic error and permission handling UX.
@@ -37,6 +37,7 @@ Build a macOS menu bar widget that provides quick playback controls and context 
 - Playback controls map correctly to active source.
 - Permission-denied states show actionable guidance.
 - Output switching entry is discoverable in <= 2 clicks from menu bar icon.
+- Selecting a playlist from the active provider starts playback, or displays a clear unavailable/error state.
 - App remains responsive under temporary source/API failures.
 
 ## 6. Non-Functional Requirements

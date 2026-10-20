@@ -18,6 +18,8 @@ protocol PlayerAdapter {
     func playPause() throws
     func next() throws
     func previous() throws
+    func playlists() throws -> [String]
+    func playPlaylist(at index: Int) throws
 }
 
 /// Adapter generico basado en AppleScript (Music y Spotify comparten sintaxis).
@@ -76,6 +78,26 @@ class ScriptPlayerAdapter: PlayerAdapter {
         guard isRunning() else { throw PlayerError.notRunning }
         try run("tell application id \"\(bundleID)\" to previous track")
     }
+
+    func playlists() throws -> [String] {
+        guard isRunning() else { throw PlayerError.notRunning }
+        let out = try run("""
+        tell application id "\(bundleID)"
+            set output to ""
+            repeat with playlistItem in (get every playlist)
+                set output to output & (name of playlistItem) & (ASCII character 30)
+            end repeat
+            return output
+        end tell
+        """)
+        return out.split(separator: Character(UnicodeScalar(30)!)).map(String.init)
+    }
+
+    func playPlaylist(at index: Int) throws {
+        guard isRunning() else { throw PlayerError.notRunning }
+        guard index >= 0 else { throw PlayerError.script("invalid playlist index") }
+        try run("tell application id \"\(bundleID)\" to play playlist \(index + 1)")
+    }
 }
 
 final class AppleMusicAdapter: ScriptPlayerAdapter {
@@ -84,4 +106,10 @@ final class AppleMusicAdapter: ScriptPlayerAdapter {
 
 final class SpotifyAdapter: ScriptPlayerAdapter {
     init() { super.init(name: "Spotify", bundleID: "com.spotify.client") }
+
+    override func playPlaylist(at index: Int) throws {
+        guard isRunning() else { throw PlayerError.notRunning }
+        guard index >= 0 else { throw PlayerError.script("invalid playlist index") }
+        try run("tell application id \"\(bundleID)\" to play track 1 of playlist \(index + 1)")
+    }
 }

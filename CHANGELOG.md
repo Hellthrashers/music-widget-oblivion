@@ -6,6 +6,12 @@ This project follows a lightweight changelog format and uses semantic pre-releas
 
 ---
 
+## [Unreleased]
+
+### Added
+- Playlist quick access for the active Apple Music or Spotify source.
+- A menu entry that opens macOS Sound settings for output selection.
+
 ## [v0.1.0-beta.1] - 2026-10-20
 
 ### Added

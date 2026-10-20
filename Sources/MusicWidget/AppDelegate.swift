@@ -1,9 +1,15 @@
 import AppKit
 
-final class AppDelegate: NSObject, NSApplicationDelegate {
+private struct PlaylistSelection {
+    let sourceIndex: Int
+    let playlistIndex: Int
+}
+
+final class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private let nowPlayingItem = NSMenuItem(title: "Nada reproduciendose", action: nil, keyEquivalent: "")
     private let sourceItem = NSMenuItem()
+    private let playlistsMenu = NSMenu(title: "Playlists")
     private var refreshMenuItems: [NSMenuItem] = []
     private var timer: Timer?
 
@@ -66,6 +72,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         sourceItem.target = self
         updateSourceTitle()
         menu.addItem(sourceItem)
+
+        let playlistsItem = NSMenuItem(title: "Playlists", action: nil, keyEquivalent: "")
+        playlistsMenu.delegate = self
+        playlistsItem.submenu = playlistsMenu
+        menu.addItem(playlistsItem)
+
+        menu.addItem(item("Open Sound Settings…", #selector(openSoundSettings)))
 
         let refreshSubmenuItem = NSMenuItem(title: "Refresh Interval", action: nil, keyEquivalent: "")
         let refreshSubmenu = NSMenu(title: "Refresh Interval")
@@ -169,6 +182,57 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     @objc private func forceRefresh() {
         refresh()
         Log.info("forceRefresh", provider: adapter.name)
+    }
+
+    @objc private func openSoundSettings() {
+        let soundPane = URL(fileURLWithPath: "/System/Library/PreferencePanes/Sound.prefPane")
+        guard NSWorkspace.shared.open(soundPane) else {
+            nowPlayingItem.title = "No se pudieron abrir los ajustes de sonido"
+            Log.error("openSoundSettings", provider: adapter.name, error: "could not open Sound settings")
+            return
+        }
+        Log.info("openSoundSettings", provider: adapter.name)
+    }
+
+    func menuWillOpen(_ menu: NSMenu) {
+        guard menu === playlistsMenu else { return }
+        playlistsMenu.removeAllItems()
+        do {
+            let names = try adapter.playlists()
+            guard !names.isEmpty else {
+                let emptyItem = NSMenuItem(title: "No hay playlists disponibles", action: nil, keyEquivalent: "")
+                emptyItem.isEnabled = false
+                playlistsMenu.addItem(emptyItem)
+                return
+            }
+            for (index, name) in names.enumerated() {
+                let playlistItem = item(name, #selector(playPlaylist(_:)))
+                playlistItem.representedObject = PlaylistSelection(
+                    sourceIndex: sourceIndex,
+                    playlistIndex: index
+                )
+                playlistsMenu.addItem(playlistItem)
+            }
+        } catch {
+            let errorItem = NSMenuItem(title: "Playlists no disponibles", action: nil, keyEquivalent: "")
+            errorItem.isEnabled = false
+            playlistsMenu.addItem(errorItem)
+            Log.error("loadPlaylists", provider: adapter.name, error: "\(error)")
+        }
+    }
+
+    @objc private func playPlaylist(_ sender: NSMenuItem) {
+        guard let selection = sender.representedObject as? PlaylistSelection else { return }
+        let selectedAdapter = adapters[selection.sourceIndex]
+        do {
+            try selectedAdapter.playPlaylist(at: selection.playlistIndex)
+            Log.info("playPlaylist", provider: selectedAdapter.name)
+            refresh()
+        } catch {
+            Log.error("playPlaylist", provider: selectedAdapter.name, error: "\(error)")
+            nowPlayingItem.title = "\(selectedAdapter.name): no se pudo reproducir la playlist"
+            statusItem.button?.title = "♪"
+        }
     }
 
     @objc private func quit() { NSApplication.shared.terminate(nil) }

@@ -36,9 +36,8 @@ Music Widget Oblivion is a macOS menu bar application that provides quick playba
    - Handles provider auth/permission specifics behind interface boundary.
 
 4. **Output Routing Layer**
-   - Integrates with macOS output/AirPlay mechanisms.
-   - Exposes discover/select operations to UI.
-   - Provides safe fallback when requested output is unavailable.
+   - The MVP opens macOS Sound settings for output/AirPlay selection.
+   - Actual output discovery and routing remain owned by macOS.
 
 5. **Persistence & Preferences**
    - Stores selected provider, UI preferences, and last known lightweight state.
